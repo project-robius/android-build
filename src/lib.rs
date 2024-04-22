@@ -25,7 +25,9 @@
 
 
 mod java_build;
+mod java_run;
 mod env_paths;
 
 pub use java_build::*;
+pub use java_run::*;
 pub use env_paths::*;
