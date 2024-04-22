@@ -72,6 +72,12 @@ pub fn android_sdk() -> Option<PathBuf> {
         .or_else(|| find_android_sdk::find_android_sdk().and_then(PathExt::path_if_exists))
 }
 
+/// Returns the path to the `android.jar` file for the given API level.
+///
+/// If the `ANDROID_JAR` environment variable is set and points to a file that exists,
+/// that path is returned.
+/// If `api_level`is `None`, the value of the `ANDROID_API_LEVEL` environment variable is used
+/// to find the `android.jar` file from the Android SDK root directory.
 pub fn android_jar(api_level: Option<&str>) -> Option<PathBuf> {
     env::var(ANDROID_JAR).ok()
         .and_then(PathExt::path_if_exists)
@@ -90,6 +96,12 @@ pub fn android_jar(api_level: Option<&str>) -> Option<PathBuf> {
         )
 }
 
+/// Returns the path to the `d8.jar` file for the given build tools version.
+///
+/// If the `ANDROID_D8_JAR` environment variable is set and points to a file that exists,
+/// that path is returned.
+/// If `build_tools_version`is `None`, the value of the `ANDROID_SDK_VERSION` environment variable is used
+/// to find the `d8.jar` file from the Android SDK root directory.
 pub fn android_d8_jar(build_tools_version: Option<&str>) -> Option<PathBuf> {
     env::var(ANDROID_D8_JAR).ok()
         .and_then(PathExt::path_if_exists)
@@ -109,6 +121,7 @@ pub fn android_d8_jar(build_tools_version: Option<&str>) -> Option<PathBuf> {
         )
 }
 
+/// Returns the path to the `java` executable by looking for `$JAVA_HOME/bin/java`.
 pub fn java() -> Option<PathBuf> {
     java_home().and_then(|jh| jh
         .join("bin")
@@ -117,6 +130,7 @@ pub fn java() -> Option<PathBuf> {
     )
 }
 
+/// Returns the path to the `javac` compiler by looking for `$JAVA_HOME/bin/javac`.
 pub fn javac() -> Option<PathBuf> {
     java_home().and_then(|jh| jh
         .join("bin")
@@ -125,10 +139,15 @@ pub fn javac() -> Option<PathBuf> {
     )
 }
 
+/// Returns the JAVA_HOME path by attempting to discover it.
+/// 
+/// First, if the `$JAVA_HOME` environment variable is set and points to a directory that exists,
+/// that path is returned.
+/// Otherwise, a series of common installation locations is used,
+/// based on the current platform (macOS, Linux, Windows).
 pub fn java_home() -> Option<PathBuf> {
     env::var(JAVA_HOME).ok()
         .and_then(PathExt::path_if_exists)
         .map(PathBuf::from)
         .or_else(find_java_home)
 }
-
