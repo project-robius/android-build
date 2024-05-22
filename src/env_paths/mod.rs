@@ -1,44 +1,23 @@
-// so I think the only real instructive cmake files within the NDK is `cmake/android-legacy.toolchain.cmake` which names various cmake-level env vars like so:
-// * `ANDROID_PLATFORM`, has a value like "android-33" (not sure how "-ext4" suffixes are represented, which we do need)
-// * `ANDROID_PLATFORM_LEVEL`, has a value like "33"
-// * `ANDROID_NATIVE_API_LEVEL`, which seems to be an alternate for the above two, and has a value like "android-33"
-// * `ANDROID_TOOLCHAIN_NAME`, has a value like "aarch64-linux-android-"
-// * `ANDROID_ABI`, has a value like "arm64-v8a" (don't think we need thisi)
-// 
-// 
-// and then for NDK stuff, there's:
-// * `ANDROID_NDK`, already widely known and standardized. 
-// * `ANDROID_NDK_MAJOR`, MINOR, BUILD, BETA, which have possible formats:
-//   *  r16, build 1234: 16.0.1234
-//   * r16b, build 1234: 16.1.1234
-//   * r16 beta 1, build 1234: 16.0.1234-beta1
-//
-//
-// ok, so my takeaways from digging into this is that we need to change some of our exports:
-// * ANDROID_API_LEVEL, e.g., either "android-33" or just "33", aka ANDROID_PLATFORM
-// * a build tools version, e.g., "33.0.1"
-// * an SDK Extension number, which is an *optional* integer value like "4" that gets appended to the android api level as "android-33-ext4" to form a full platform string.
-//   * here we could accept either "ext4", "-ext4", or just "4", for ultimate flexibility.
-//
-//
-// more env vars are documented here: https://github.com/taka-no-me/android-cmake
-//
-
 use std::{env, path::{Path, PathBuf}};
 use self::find_java::find_java_home;
 
 mod find_android_sdk;
 mod find_java;
 
-pub const ANDROID_HOME: &str = "ANDROID_HOME";
-pub const ANDROID_SDK_ROOT: &str = "ANDROID_SDK_ROOT";
-pub const ANDROID_SDK_VERSION: &str = "ANDROID_SDK_VERSION";
-pub const ANDROID_API_LEVEL: &str = "ANDROID_API_LEVEL";
-pub const ANDROID_D8_JAR: &str = "ANDROID_D8_JAR";
-pub const ANDROID_JAR: &str = "ANDROID_JAR";
-pub const JAVA_HOME: &str = "JAVA_HOME";
 
-/// An exentions trait for checking if a path exists.
+pub const ANDROID_HOME:                 &str = "ANDROID_HOME";
+pub const ANDROID_SDK_ROOT:             &str = "ANDROID_SDK_ROOT";
+pub const ANDROID_BUILD_TOOLS_VERSION:  &str = "ANDROID_BUILD_TOOLS_VERSION";
+pub const ANDROID_PLATFORM:             &str = "ANDROID_PLATFORM";
+pub const ANDROID_SDK_VERSION:          &str = "ANDROID_SDK_VERSION";
+pub const ANDROID_API_LEVEL:            &str = "ANDROID_API_LEVEL";
+pub const ANDROID_SDK_EXTENSION:        &str = "ANDROID_SDK_EXTENSION";
+pub const ANDROID_D8_JAR:               &str = "ANDROID_D8_JAR";
+pub const ANDROID_JAR:                  &str = "ANDROID_JAR";
+pub const JAVA_HOME:                    &str = "JAVA_HOME";
+
+
+/// An extension trait for checking if a path exists.
 pub trait PathExt {
     fn path_if_exists(self) -> Option<Self> where Self: Sized;
 }
@@ -76,18 +55,26 @@ pub fn android_sdk() -> Option<PathBuf> {
 ///
 /// If the `ANDROID_JAR` environment variable is set and points to a file that exists,
 /// that path is returned.
-/// If `api_level`is `None`, the value of the `ANDROID_API_LEVEL` environment variable is used
-/// to find the `android.jar` file from the Android SDK root directory.
-pub fn android_jar(api_level: Option<&str>) -> Option<PathBuf> {
+///
+/// Otherwise, `platform_string` is used to find the `android.jar` file from the
+/// `platforms` subdirectory in the Android SDK root directory.
+///
+/// If `platform_string` is `None`, the value of the following environment variables
+/// are used to calculate the platform string:
+/// * `ANDROID_PLATFORM`
+/// * `ANDROID_API_LEVEL`
+/// * `ANDROID_SDK_VERSION`
+/// * `ANDROID_SDK_EXTENSION`
+pub fn android_jar(platform_string: Option<&str>) -> Option<PathBuf> {
     env::var(ANDROID_JAR).ok()
         .and_then(PathExt::path_if_exists)
         .map(PathBuf::from)
         .or_else(|| android_sdk()
             .and_then(|sdk| sdk
                 .join("platforms")
-                .join(api_level.map(ToString::to_string)
-                    .unwrap_or_else(|| env::var(ANDROID_API_LEVEL)
-                        .expect("either ANDROID_JAR or ANDROID_API_LEVEL must be set")
+                .join(platform_string.map(ToString::to_string)
+                    .unwrap_or_else(|| env_android_platform_api_level()
+                        .expect("either ANDROID_JAR or [ANDROID_PLATFORM, ANDROID_API_LEVEL, ANDROID_SDK_VERSION] must be set")
                     )
                 )
                 .join("android.jar")
@@ -100,7 +87,7 @@ pub fn android_jar(api_level: Option<&str>) -> Option<PathBuf> {
 ///
 /// If the `ANDROID_D8_JAR` environment variable is set and points to a file that exists,
 /// that path is returned.
-/// If `build_tools_version`is `None`, the value of the `ANDROID_SDK_VERSION` environment variable is used
+/// If `build_tools_version`is `None`, the value of the `ANDROID_BUILD_TOOLS_VERSION` environment variable is used
 /// to find the `d8.jar` file from the Android SDK root directory.
 pub fn android_d8_jar(build_tools_version: Option<&str>) -> Option<PathBuf> {
     env::var(ANDROID_D8_JAR).ok()
@@ -110,8 +97,8 @@ pub fn android_d8_jar(build_tools_version: Option<&str>) -> Option<PathBuf> {
             .and_then(|sdk| sdk
                 .join("build-tools")
                 .join(build_tools_version.map(ToString::to_string)
-                    .unwrap_or_else(|| env::var(ANDROID_SDK_VERSION)
-                        .expect("either ANDROID_D8_JAR or ANDROID_SDK_VERSION must be set")
+                    .unwrap_or_else(|| env::var(ANDROID_BUILD_TOOLS_VERSION)
+                        .expect("either ANDROID_D8_JAR or ANDROID_BUILD_TOOLS_VERSION must be set")
                     )
                 )
                 .join("lib")
@@ -119,6 +106,39 @@ pub fn android_d8_jar(build_tools_version: Option<&str>) -> Option<PathBuf> {
                 .path_if_exists()
             )
         )
+}
+
+/// Returns the platform version string (aka API level, SDK version) being targeted for compilation.
+///
+/// This deals with environment variables `ANDROID_PLATFORM`, `ANDROID_API_LEVEL`, and `ANDROID_SDK_VERSION`,
+/// as well as the optional `ANDROID_SDK_EXTENSION`.
+fn env_android_platform_api_level() -> Option<String> {
+    let mut base = env::var(ANDROID_PLATFORM).ok()
+        .or_else(|| env::var(ANDROID_API_LEVEL).ok())
+        .or_else(|| env::var(ANDROID_SDK_VERSION).ok())?;
+    
+    if base.is_empty() {
+        return None;
+    }
+
+    if !base.starts_with("android-") {
+        base = format!("android-{}", base);
+    }
+
+    if base.contains("-ext") {
+        return Some(base);
+    }
+
+    if let Some(raw_ext) = env::var(ANDROID_SDK_EXTENSION).ok() {
+        let ext_num = raw_ext
+            .trim_start_matches("-")
+            .trim_start_matches("ext");
+        if !ext_num.is_empty() {
+            base = format!("{}-ext{}", base, ext_num);
+        }
+    }
+    
+    Some(base)
 }
 
 /// Returns the path to the `java` executable by looking for `$JAVA_HOME/bin/java`.

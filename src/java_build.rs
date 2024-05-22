@@ -71,7 +71,7 @@ pub struct JavaBuild {
     files: Vec<OsString>,
 }
 
-/// Debug information to include in the output.
+/// Debug information to include in the output of a `javac` build.
 ///
 /// The default value for this struct is for everything to be `true`,
 /// meaning all debug information is included.
