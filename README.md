@@ -1,10 +1,10 @@
 # android-build
 
-[![Latest Version](https://img.shields.io/crates/v/android_build.svg)](https://crates.io/crates/android_build)
-[![Docs](https://docs.rs/android_build/badge.svg)](https://docs.rs/android_build/latest/android_build/)
+[![Latest Version](https://img.shields.io/crates/v/android-build.svg)](https://crates.io/crates/android_build)
+[![Docs](https://docs.rs/android-build/badge.svg)](https://docs.rs/android-build/latest/android_build/)
 [![Project Robius Matrix Chat](https://img.shields.io/matrix/robius-general%3Amatrix.org?server_fqdn=matrix.org&style=flat&logo=matrix&label=Project%20Robius%20Matrix%20Chat&color=B7410E)](https://matrix.to/#/#robius:matrix.org)
 
-Use this crate from your Cargo `build.rs` build script to compile Java source files and to run Java commands as part of a Rust build,
+Use this crate from your Cargo `build.rs` build script to compile Java source files and to run Java/Android commands as part of a Rust build,
 specifically designed for Android-targeted builds and Android tools.
 
 This crate aims to behave similarly to [`cc-rs`](https://github.com/rust-lang/cc-rs/tree/main), but for Java (primarily on Android) instead of C/C++.
