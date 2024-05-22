@@ -22,7 +22,7 @@
 //!   * To specify `android-33-ext4`, this can be set to `-ext4`, `ext4`, or just `4`.
 //!     All of these will be treated identically.
 //!   * If `ANDROID_PLATFORM`/`ANDROID_API_LEVEL`/`ANDROID_SDK_VERSION`
-//!     already includes an extension, this will be ignored.
+//!     already includes an extension, then `ANDROID_SDK_EXTENSION` will be ignored.
 //! * `ANDROID_D8_JAR`: the path to the `d8.jar` file.
 //! * `ANDROID_JAR`: the path to the `android.jar` file.
 //! * `JAVA_HOME`: the Java SDK directory.
