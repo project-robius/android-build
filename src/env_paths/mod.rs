@@ -26,7 +26,10 @@ impl<P: AsRef<Path>> PathExt for P {
         if self.as_ref().as_os_str().is_empty() {
             return None;
         }
-        self.as_ref().exists().then_some(self)
+        match self.as_ref().try_exists() {
+            Ok(true) => Some(self),
+            _ => None,
+        }
     }
 }
 

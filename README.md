@@ -34,7 +34,7 @@ fn main() {
             .compile()
             .expect("java build failed!");
 
-        // `YourJavaFile.class` will be the Cargo-specified OUT_DIR.
+        // `YourJavaFile.class` will be in the Cargo-specified OUT_DIR.
     }
 }
 ```
