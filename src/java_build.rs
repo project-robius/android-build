@@ -137,6 +137,14 @@ impl JavaBuild {
             d.add_as_args_to(&mut cmd);
         }
 
+        if let Some(source) = env_paths::android_source_version() {
+            cmd.arg("--source").arg(source);
+        }
+
+        if let Some(target) = env_paths::android_target_version() {
+            cmd.arg("--target").arg(target);
+        }
+
         self.class_paths     .iter().for_each(|p| { cmd.arg("-cp").arg(p); });
         self.source_paths    .iter().for_each(|p| { cmd.arg("-sourcepath").arg(p); });
         self.boot_class_paths.iter().for_each(|p| { cmd.arg("-bootclasspath").arg(p); });

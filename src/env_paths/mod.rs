@@ -15,7 +15,8 @@ pub const ANDROID_SDK_EXTENSION:        &str = "ANDROID_SDK_EXTENSION";
 pub const ANDROID_D8_JAR:               &str = "ANDROID_D8_JAR";
 pub const ANDROID_JAR:                  &str = "ANDROID_JAR";
 pub const JAVA_HOME:                    &str = "JAVA_HOME";
-
+pub const ANDROID_SOURCE_VERSION:       &str = "ANDROID_SOURCE_VERSION";
+pub const ANDROID_TARGET_VERSION:       &str = "ANDROID_TARGET_VERSION";
 
 /// An extension trait for checking if a path exists.
 pub trait PathExt {
@@ -173,4 +174,16 @@ pub fn java_home() -> Option<PathBuf> {
         .and_then(PathExt::path_if_exists)
         .map(PathBuf::from)
         .or_else(find_java_home)
+}
+
+/// Returns the source version for compilation
+/// from `ANDROID_SOURCE_VERSION`,
+pub fn android_source_version() -> Option<String> {
+    env::var(ANDROID_SOURCE_VERSION).ok()
+}
+
+/// Returns the target version for compilation
+/// from `ANDROID_TARGET_VERSION`,
+pub fn android_target_version() -> Option<String> {
+    env::var(ANDROID_TARGET_VERSION).ok()
 }
