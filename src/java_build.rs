@@ -137,11 +137,11 @@ impl JavaBuild {
             d.add_as_args_to(&mut cmd);
         }
 
-        if let Some(source) = env_paths::android_source_version() {
+        if let Some(source) = env_paths::java_source_version() {
             cmd.arg("--source").arg(source);
         }
 
-        if let Some(target) = env_paths::android_target_version() {
+        if let Some(target) = env_paths::java_target_version() {
             cmd.arg("--target").arg(target);
         }
 

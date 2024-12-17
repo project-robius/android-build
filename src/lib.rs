@@ -25,10 +25,10 @@
 //!     already includes an extension, then `ANDROID_SDK_EXTENSION` will be ignored.
 //! * `ANDROID_D8_JAR`: the path to the `d8.jar` file.
 //! * `ANDROID_JAR`: the path to the `android.jar` file.
-//! * `ANDROID_SOURCE_VERSION`: the Java version for source compatibility; 
-//! equivalent to the `--source` javac option.
-//! * `ANDROID_TARGET_VERSION`: the Java version for target compatibility; 
-//! equivalent to the `--target` javac option.
+//! * `JAVA_SOURCE_VERSION`: the Java version for source compatibility; 
+//! equivalent to the `--source` javac option, eg: `17`.
+//! * `JAVA_TARGET_VERSION`: the Java version for target compatibility; 
+//! equivalent to the `--target` javac option, eg: `17`.
 //! * `JAVA_HOME`: the Java SDK directory.
 //!
 //! ## Acknowledgments
