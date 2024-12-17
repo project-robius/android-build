@@ -25,11 +25,11 @@
 //!     already includes an extension, then `ANDROID_SDK_EXTENSION` will be ignored.
 //! * `ANDROID_D8_JAR`: the path to the `d8.jar` file.
 //! * `ANDROID_JAR`: the path to the `android.jar` file.
-//! * `JAVA_SOURCE_VERSION`: the Java version for source compatibility; 
-//! equivalent to the `--source` javac option, eg: `17`.
-//! * `JAVA_TARGET_VERSION`: the Java version for target compatibility; 
-//! equivalent to the `--target` javac option, eg: `17`.
 //! * `JAVA_HOME`: the Java SDK directory.
+//! * `JAVA_SOURCE_VERSION`: the Java version for source compatibility; 
+//!   equivalent to the `--source` javac option, e.g., `17` for Java 1.7.
+//! * `JAVA_TARGET_VERSION`: the Java version for target compatibility; 
+//!   equivalent to the `--target` javac option, e.g., `17` for Java 1.7.
 //!
 //! ## Acknowledgments
 //! This crate simplifies some code found in other crates:
