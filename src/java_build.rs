@@ -67,6 +67,10 @@ pub struct JavaBuild {
     /// Pass an option to an annotation processor.
     #[doc(alias = "-A")]
     annotation_parameters: Vec<(String, String)>,
+    /// The Java version for source compatibility.
+    java_source_version: Option<i32>,
+    /// The Java version for target compatibility.
+    java_target_version: Option<i32>,
     /// Paths to the java source files to be compiled.
     files: Vec<OsString>,
 }
@@ -131,24 +135,46 @@ impl JavaBuild {
             .ok_or_else(|| std::io::Error::other(
                 "JAVA_HOME not provided, and could not be auto-discovered."
             ))?;
-
+        
         let mut cmd = Command::new(java_home.join("bin").join("javac"));
         if let Some(d) = self.debug_info.as_ref() {
             d.add_as_args_to(&mut cmd);
         }
 
-        if let Some(source) = env_paths::java_source_version() {
-            cmd.arg("--source").arg(source);
+        let java_ver = crate::check_javac_version(&java_home)?;
+        if java_ver < 8 {
+            return Err(std::io::Error::other(
+                format!("The minimum required Java version is Java 8. Your Java version: {java_ver}")
+            ));
+        }
+        
+        if let Some(source) = self.java_source_version.or(env_paths::java_source_version()) {
+            if java_ver < source {
+                return Err(std::io::Error::other(
+                    format!("'-source {source}' is higher than your Java version: {java_ver}")
+                ));
+            }
+            cmd.arg("-source").arg(source.to_string());
         }
 
-        if let Some(target) = env_paths::java_target_version() {
-            cmd.arg("--target").arg(target);
+        if let Some(target) = self.java_target_version.or(env_paths::java_target_version()) {
+            if java_ver < target {
+                return Err(std::io::Error::other(
+                    format!("'-target {target}' is higher than your Java version: {java_ver}")
+                ));
+            }
+            cmd.arg("-target").arg(target.to_string());
         }
 
-        self.class_paths     .iter().for_each(|p| { cmd.arg("-cp").arg(p); });
-        self.source_paths    .iter().for_each(|p| { cmd.arg("-sourcepath").arg(p); });
-        self.boot_class_paths.iter().for_each(|p| { cmd.arg("-bootclasspath").arg(p); });
-        self.extension_dirs  .iter().for_each(|p| { cmd.arg("-extdirs").arg(p); });
+        let add_path_arg = |cmd: &mut Command, arg_name, paths: &[OsString]| {
+            if paths.is_empty() { return; }
+            let seperator = if std::path::MAIN_SEPARATOR == '\\' { ";" } else { ":" };
+            cmd.arg(arg_name).arg(paths.join(OsStr::new(seperator)));
+        };
+        add_path_arg(&mut cmd, "-cp",            &self.class_paths);
+        add_path_arg(&mut cmd, "-sourcepath",    &self.source_paths);
+        add_path_arg(&mut cmd, "-bootclasspath", &self.boot_class_paths);
+        add_path_arg(&mut cmd, "-extdirs",       &self.extension_dirs);
 
         let processors = self.annotation_processors.join(OsStr::new(","));
         if processors.len() != 0 {
@@ -328,6 +354,18 @@ impl JavaBuild {
         V: Into<String>,
     {
         self.annotation_parameters.push((key.into(), value.into()));
+        self
+    }
+
+    /// Specify the Java version for source compatibility.
+    pub fn java_source_version(&mut self, version: i32) -> &mut Self {
+        self.java_source_version.replace(version);
+        self
+    }
+
+    /// Specify the Java version for target compatibility.
+    pub fn java_target_version(&mut self, version: i32) -> &mut Self {
+        self.java_target_version.replace(version);
         self
     }
 

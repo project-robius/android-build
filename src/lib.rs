@@ -26,10 +26,10 @@
 //! * `ANDROID_D8_JAR`: the path to the `d8.jar` file.
 //! * `ANDROID_JAR`: the path to the `android.jar` file.
 //! * `JAVA_HOME`: the Java SDK directory.
-//! * `JAVA_SOURCE_VERSION`: the Java version for source compatibility; 
-//!   equivalent to the `--source` javac option, e.g., `17` for Java 1.7.
-//! * `JAVA_TARGET_VERSION`: the Java version for target compatibility; 
-//!   equivalent to the `--target` javac option, e.g., `17` for Java 1.7.
+//! * `JAVA_SOURCE_VERSION`: the Java version for source compatibility,
+//!   which is passed to the `--source` javac option, e.g., `8` for Java 1.8, or `17` for Java 17.
+//! * `JAVA_TARGET_VERSION`: the Java version for target compatibility,
+//!   which is passed to the `--target` javac option, e.g., `7` for Java 1.7, or `17` for Java 17.
 //!
 //! ## Acknowledgments
 //! This crate simplifies some code found in other crates:
@@ -39,13 +39,16 @@
 //!   for finding the Java home directory on macOS, Linux, and Windows.
 //! * [`jerk`](https://github.com/MaulingMonkey/jerk)
 //!   for arguments that can be passed into `java` and `javac` commands.
-//!
+//! * [`i-slint-backend-android-activity`](https://docs.rs/crate/i-slint-backend-android-activity/1.9.1/source/build.rs)
+//!   for parsing `javac` version and finding the latest platform and build tools versions in the Android SDK installation.
 
 
 mod java_build;
 mod java_run;
 mod env_paths;
+// mod dexer;
 
 pub use java_build::*;
 pub use java_run::*;
 pub use env_paths::*;
+// pub use dexer::*;
