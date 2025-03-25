@@ -16,7 +16,7 @@ categories = ["development-tools::build-utils"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/project-robius/android-build"
-version = "0.1.0"
+version = "0.1.1"
 
 
 [dependencies]
@@ -26,3 +26,11 @@ version = "0.1.0"
 version = "0.52"
 default-features = false
 features = [ "Win32_UI_Shell", "Win32_Foundation", "Win32_Globalization", "Win32_System_Com" ]
+
+
+[features]
+
+default = ["cargo"]
+
+## Enables communication with `cargo` via standard output for build scripts.
+cargo = []
