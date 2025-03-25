@@ -68,9 +68,9 @@ pub struct JavaBuild {
     #[doc(alias = "-A")]
     annotation_parameters: Vec<(String, String)>,
     /// The Java version for source compatibility.
-    java_source_version: Option<i32>,
+    java_source_version: Option<u32>,
     /// The Java version for target compatibility.
-    java_target_version: Option<i32>,
+    java_target_version: Option<u32>,
     /// Paths to the java source files to be compiled.
     files: Vec<OsString>,
 }
@@ -358,13 +358,13 @@ impl JavaBuild {
     }
 
     /// Specify the Java version for source compatibility.
-    pub fn java_source_version(&mut self, version: i32) -> &mut Self {
+    pub fn java_source_version(&mut self, version: u32) -> &mut Self {
         self.java_source_version.replace(version);
         self
     }
 
     /// Specify the Java version for target compatibility.
-    pub fn java_target_version(&mut self, version: i32) -> &mut Self {
+    pub fn java_target_version(&mut self, version: u32) -> &mut Self {
         self.java_target_version.replace(version);
         self
     }

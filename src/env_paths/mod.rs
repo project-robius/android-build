@@ -72,8 +72,8 @@ pub fn android_jar(platform_string: Option<&str>) -> Option<PathBuf> {
         .and_then(PathExt::path_if_exists)
         .map(PathBuf::from)
         .or_else(|| android_sdk()
-            .map(|sdk| sdk.join("platforms"))
-            .and_then(|platforms| {
+            .and_then(|sdk| {
+                let platforms = sdk.join("platforms");
                 platform_string.map(ToString::to_string)
                     .or_else(env_android_platform_api_level)
                     .or_else(|| {
@@ -87,16 +87,18 @@ pub fn android_jar(platform_string: Option<&str>) -> Option<PathBuf> {
                     })
                     .map(|version| platforms.join(version))
             })
+            .and_then(|path| path.join("android.jar").path_if_exists())
         )
-        .and_then(|path| path.join("android.jar").path_if_exists())
 }
 
 /// Returns the path to the `d8.jar` file for the given build tools version.
 ///
 /// The path is determined by an ordered set of attempts:
 /// * The `ANDROID_D8_JAR` environment variable, if it is set and points to a file that exists.
-/// * The `ANDROID_BUILD_TOOLS_VERSION` environment variable is used to find the `d8.jar` file
-///   from the Android SDK root directory.
+/// * The argument `build_tools_version` is used if it is `Some`, to find the subdirectory for
+///   the specific build tools version under the Android SDK `build-tools` directory.
+/// * The `ANDROID_BUILD_TOOLS_VERSION` environment variable is used to find the subdirectory for
+///   the build tools version under the Android SDK `build-tools` directory.
 /// * The highest Android build tools version found in the SDK `build-tools` directory is used if
 ///   the build tools version is not set by the environment variable.
 pub fn android_d8_jar(build_tools_version: Option<&str>) -> Option<PathBuf> {
@@ -104,8 +106,8 @@ pub fn android_d8_jar(build_tools_version: Option<&str>) -> Option<PathBuf> {
         .and_then(PathExt::path_if_exists)
         .map(PathBuf::from)
         .or_else(|| android_sdk()
-            .map(|sdk| sdk.join("build-tools"))
-            .and_then(|build_tools| {
+            .and_then(|sdk| {
+                let build_tools = sdk.join("build-tools");
                 build_tools_version.map(ToString::to_string)
                     .or_else(|| env_var(ANDROID_BUILD_TOOLS_VERSION).ok())
                     .or_else(|| {
@@ -202,17 +204,17 @@ pub fn java_home() -> Option<PathBuf> {
 }
 
 /// Returns the source version for compilation from environment variable `JAVA_SOURCE_VERSION`.
-pub fn java_source_version() -> Option<i32> {
+pub fn java_source_version() -> Option<u32> {
     env_var(JAVA_SOURCE_VERSION).ok()?.parse().ok()
 }
 
 /// Returns the target version for compilation from environment variable `JAVA_TARGET_VERSION`.
-pub fn java_target_version() -> Option<i32> {
+pub fn java_target_version() -> Option<u32> {
     env_var(JAVA_TARGET_VERSION).ok()?.parse().ok()
 }
 
 /// Returns the major version number of the `javac` compiler.
-pub fn check_javac_version(java_home: impl AsRef<Path>) -> std::io::Result<i32> {
+pub fn check_javac_version(java_home: impl AsRef<Path>) -> std::io::Result<u32> {
     let javac = java_home.as_ref().join("bin").join("javac");
     let output = std::process::Command::new(&javac)
         .arg("-version")
@@ -233,7 +235,7 @@ pub fn check_javac_version(java_home: impl AsRef<Path>) -> std::io::Result<i32> 
     }
     let version = parse_javac_version_output(&version_output);
     if version > 0 {
-        Ok(version)
+        Ok(version as u32)
     } else {
         Err(std::io::Error::other(
             format!("Failed to parse javac version: '{version_output}'")
