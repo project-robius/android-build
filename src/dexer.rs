@@ -16,6 +16,10 @@ use crate::JavaRun;
 /// 
 /// Documentation on `d8` options are based on
 /// <https://developer.android.com/tools/d8/>.
+/// 
+/// Note: Newer JDK versions (including JDK 21 and above) may not work with
+/// Android D8 from older build tools versions (below 35.0.0) if there are
+/// anonymous classes in the Java code, which produce files like `Cls$1.class`.
 #[derive(Clone, Debug, Default)]
 pub struct Dexer {
     /// Override the default `JAVA_HOME` path.
@@ -38,6 +42,7 @@ pub struct Dexer {
     no_desugaring: bool,
 
     /// Specify the path to the `android.jar` of your Android SDK.
+    /// Otherwise, the default path is found using [crate::android_jar].
     android_jar_path: Option<PathBuf>,
 
     /// Specify classpath resources that `d8` may require to compile your project's DEX files.
@@ -94,20 +99,21 @@ impl Dexer {
         }
 
         if self.no_desugaring {
+            // `--lib` and `--classpath` options are probably redundant under this mode.
             d8_run.arg("--no-desugaring");
-        } else {
-            let android_jar_path = self.android_jar_path
-                .clone()
-                .and_then(PathExt::path_if_exists)
-                .or_else(|| env_paths::android_jar(None))
-                .ok_or_else(|| std::io::Error::other(
-                    "android.jar not provided, and could not be auto-discovered."
-                ))?;
-            d8_run.arg("--lib").arg(android_jar_path);
+        }
 
-            for class_path in &self.class_paths {
-                d8_run.arg("--classpath").arg(class_path);
-            }
+        let android_jar_path = self.android_jar_path
+            .clone()
+            .and_then(PathExt::path_if_exists)
+            .or_else(|| env_paths::android_jar(None))
+            .ok_or_else(|| std::io::Error::other(
+                "android.jar not provided, and could not be auto-discovered."
+            ))?;
+        d8_run.arg("--lib").arg(android_jar_path);
+
+        for class_path in &self.class_paths {
+            d8_run.arg("--classpath").arg(class_path);
         }
 
         if let Some(out_dir) = &self.out_dir {
