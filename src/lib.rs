@@ -3,7 +3,7 @@
 //! ## Tools exposed by this crate
 //! * javac: use the [`JavaBuild`] struct.
 //! * java: use the [`JavaRun`] struct.
-// //! * d8: through the [`Dexer`] struct.
+//! * d8: through the [`Dexer`] struct.
 //!
 //! ## Environment variables in use
 //! * `ANDROID_HOME` or `ANDROID_SDK_ROOT`: path to the Android SDK directory.
@@ -46,9 +46,9 @@
 mod java_build;
 mod java_run;
 mod env_paths;
-// mod dexer;
+mod dexer;
 
 pub use java_build::*;
 pub use java_run::*;
 pub use env_paths::*;
-// pub use dexer::*;
+pub use dexer::*;
