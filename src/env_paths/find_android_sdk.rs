@@ -30,6 +30,11 @@ pub fn find_android_sdk() -> Option<PathBuf> {
         .into()
 }
 
+#[cfg(target_os = "android")]
+pub fn find_android_sdk() -> Option<PathBuf> {
+    return None
+}
+
 #[cfg(target_os = "windows")]
 /// Returns the path to the current user's home directory on Windows.
 ///
