@@ -30,9 +30,11 @@ pub fn find_android_sdk() -> Option<PathBuf> {
         .into()
 }
 
+// When building on an Android host, there is no need to locate
+// SDK files; we can just use env vars to point to local native files.
 #[cfg(target_os = "android")]
 pub fn find_android_sdk() -> Option<PathBuf> {
-    return None
+    None
 }
 
 #[cfg(target_os = "windows")]
