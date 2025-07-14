@@ -1,5 +1,6 @@
 [package]
 name = "android-build"
+version = "0.1.3"
 authors = [
     "Kevin Boos <kevinaboos@gmail.com>",
     "Robius Project Maintainers",
@@ -16,7 +17,6 @@ categories = ["development-tools::build-utils"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/project-robius/android-build"
-version = "0.1.2"
 
 
 [dependencies]
