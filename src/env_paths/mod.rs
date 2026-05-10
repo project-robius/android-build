@@ -243,9 +243,12 @@ pub fn check_javac_version(java_home: impl AsRef<Path>) -> std::io::Result<u32> 
     }
 }
 
-/// Copied from <https://docs.rs/crate/i-slint-backend-android-activity/1.9.1/source/build.rs>.
+/// Migrated from <https://docs.rs/crate/i-slint-backend-android-activity/1.9.1/source/build.rs>.
 fn parse_javac_version_output(version_output: &str) -> i32 {
     let version = version_output
+        .lines()
+        .last()
+        .unwrap_or_default()
         .split_whitespace()
         .nth(1)
         .and_then(|v| v.split('-').next())
