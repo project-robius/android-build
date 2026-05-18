@@ -1,6 +1,6 @@
 [package]
 name = "android-build"
-version = "0.1.3"
+version = "0.1.4"
 authors = [
     "Kevin Boos <kevinaboos@gmail.com>",
     "Robius Project Maintainers",
